@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,regular,500,600,700,800,900,100italic,200italic,300italic,italic,500italic,600italic,700italic,800italic,900italic" rel="stylesheet" />
+</head>
+<body>
+    <img src="img/1641981112_9-adonius-club-p-cherno-belii-fon-dlya-prezentatsii-9.jpg" alt="">
+    <div class="container">
+
+        <div class="authrorization">
+            <form action="http://127.0.0.1:8000/api/v1/users/auth" method="post">
+                <input name="email" type="email" required placeholder="E-mail"></input>
+                <input name="password" type="password" required pattern="[0-9]{8,99}" title="Пароль должен быть длиной не менее 8 цифр." class="password" placeholder="Password"></input>
+
+                <button class="buttonSignIn">Sign in</button>
+
+                <div>Not yet Sign In? -> <span class="goTo SignUp">Sign Up</span></div>
+            </form>
+        </div>
+        <div class="registration Swap">
+            <form action="http://127.0.0.1:8000/api/v1/users/regist" method="post">
+                <input name="email" type="email" placeholder="E-mail"></input>
+                <input class="correcting" name="password" type="password" placeholder="Password"></input>
+                <input class="correcting" type="password" placeholder="Re-password"></input>
+                
+                <button class="buttonSignUp">Sign Up</button>
+
+                <div>Already Sign In? -> <span class="goTo SignIn">Sign In</span></div>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+
+<script src="js/js.js"></script>
+
+</html>
