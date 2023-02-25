@@ -5,10 +5,11 @@ from typing import Dict
 from config import JWT_SECRET, JWT_ALGORITHM
 
 
-def get_token(email: str) -> Dict[str, str]:
+def get_token(user_id: int, email: str) -> Dict[str, str]:
     payload = {
-        'user_id': email,
-        'expires': time.time() + 600
+        'user_id': user_id,
+        'email': email,
+        'expires': time.time() + 3600 * 48
     }
 
     return jwt.encode(
@@ -16,6 +17,9 @@ def get_token(email: str) -> Dict[str, str]:
     )
 
 
-def decode_token(token: str) -> dict:
-    decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-    return decoded_token if decoded_token["expires"] >= time.time() else None
+def decode_token(token: str) -> dict or None:
+    try:
+        decoded_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return decoded_token if decoded_token["expires"] >= time.time() else None
+    except:
+        ...

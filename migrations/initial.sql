@@ -1,6 +1,0 @@
-CREATE TABLE Users (
-    id SERIAL PRIMARY KEY,
-    email CHAR(50) NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    is_active BOOL DEFAULT FALSE
-)
