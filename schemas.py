@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -37,7 +38,8 @@ class Users(BaseModel):
             cursor.execute(query)
 
             # Returning user_id for create jwt token in future
-            return cursor.fetchone()[0]
+            result = cursor.fetchone()
+            return result[0] if result else result
 
 
 class Categories(BaseModel):
@@ -137,3 +139,68 @@ class Categories(BaseModel):
             cursor = connection.cursor()
             cursor.execute(delete_dependencies_query)
             cursor.execute(query)
+
+
+class Expenses(BaseModel):
+    user_id: int = None
+    category_id: int
+    amount: int
+    moment: datetime = None
+    id: int = None
+
+    @staticmethod
+    def get_expenses(user_id: int):
+        query = f"""
+        SELECT amount, moment, category_id, id
+        FROM expenses
+        WHERE user_id = {user_id};
+        """
+
+        with PostgresqlConnection() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            return cursor.fetchall()
+
+    @staticmethod
+    def get_category_expenses(user_id: int, category_id: int):
+        query = f"""
+        SELECT amount, moment, id
+        FROM expenses
+        WHERE 1=1
+            AND user_id = {user_id}
+            AND category_id = {category_id};
+        """
+
+        with PostgresqlConnection() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+            return cursor.fetchall()
+
+    @staticmethod
+    def create_expense(user_id: int, category_id: int, amount: int):
+        query = f"""
+        INSERT INTO expenses (user_id, category_id, amount)
+        VALUES ({user_id}, {category_id}, {amount});
+        """
+
+        with PostgresqlConnection() as connection:
+            cursor = connection.cursor()
+            cursor.execute(query)
+
+    @staticmethod
+    def update_expense(fields: str, expense_id: int, user_id: int):
+        query = f"""
+        UPDATE expenses
+        SET {fields}
+        WHERE 1=1
+            AND id = '{expense_id}'
+            AND user_id = {user_id};
+        """
+        try:
+            with PostgresqlConnection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                return True
+        except Exception as e:
+            logger.warning(e)
+            return False

@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Response, Request
 
 from config import BASE_API_PREFIX
-from schemas import Users, Categories
+from schemas import Users, Categories, Expenses
 from auth import get_token, decode_token, get_decoded_token
 from constants import (
     WARN_INCORRECT_EMAIL_OR_PASSWORD, BAD_REQUEST, NOT_AUTHORIZED,
@@ -25,7 +25,7 @@ async def regist(user: Users):
     return {'success': True}
 
 
-@router.post('/users/auth')
+@router.get('/users/auth')
 async def auth(user: Users, response: Response):
     user_id = Users.check_user_data(user.email, user.password)
     if not user_id:
@@ -144,3 +144,79 @@ async def delete_category(name: str, request: Request, response: Response):
 
     Categories.delete_category(category_id)
     return {'success': True}
+
+
+@router.get('/expenses/{user_id}')
+async def get_expenses(user_id: int, request: Request, response: Response):
+    """Return all expenses for current user."""
+
+    decoded_token = get_decoded_token(request, response)
+    if decoded_token.get('errors'):
+        return decoded_token
+
+    expenses = Expenses.get_expenses(user_id)
+
+    serialized_expenses = [Expenses(
+        amount=expense[0],
+        moment=expense[1],
+        category_id=expense[2],
+        id=expense[3]
+    ) for expense in expenses]
+
+    return {'success': True, 'expenses': serialized_expenses}
+
+
+@router.get('/expenses/{user_id}/{category_id}')
+async def get_category_expenses(
+    user_id: int, category_id: int, response: Response, request: Request
+):
+    """Return all expenses for category"""
+
+    decoded_token = get_decoded_token(request, response)
+    if decoded_token.get('errors'):
+        return decoded_token
+
+    expenses = Expenses.get_category_expenses(user_id, category_id)
+
+    serialized_expenses = [Expenses(
+        amount=expense[0],
+        moment=expense[1],
+        category_id=category_id,
+        id=expense[2]
+    ) for expense in expenses]
+
+    return {'success': True, 'expenses': serialized_expenses}
+
+
+@router.post('/expenses')
+async def create_expense(expense: Expenses, request: Request, response: Response):
+    decoded_token = get_decoded_token(request, response)
+    if decoded_token.get('errors'):
+        return decoded_token
+
+    Expenses.create_expense(
+        user_id=decoded_token['user_id'], amount=expense.amount,
+        category_id=expense.category_id
+    )
+
+    logger.info('Successfully created expense')
+    return {'success': True}
+
+
+@router.put('/expenses/{expense_id}')
+async def update_expense(
+    expense_id: int, fields: dict, request: Request, response: Response
+):
+    decoded_token = get_decoded_token(request, response)
+    if decoded_token.get('errors'):
+        return decoded_token
+
+    updatable_fields = ['amount']
+    fields_for_update = convert_fields_for_update(fields, updatable_fields)
+
+    if Expenses.update_expense(fields_for_update, expense_id, decoded_token['user_id']):
+        logger.info('Successfully updated category')
+        return {'success': True}
+    else:
+        response.status_code = BAD_REQUEST
+        return {'success': False, 'errors': ERR_CANT_UPDATE_OBJECT}
