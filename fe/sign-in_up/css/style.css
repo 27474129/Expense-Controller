@@ -98,8 +98,14 @@ form > div {
     text-transform: uppercase;
 }
 
-.Swap {
+.authrorization {
     display: none;
+}
+.registration {
+    display: none;
+}
+.Swap {
+    display: block;
 }
 
 .goTo{
