@@ -30,4 +30,4 @@ class PostgresqlConnection(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.commit()
         self.connection.close()
-        logger.debug(f'{PostgresqlConfig.prefix}: connection refused')
+        logger.info(f'{PostgresqlConfig.prefix}: connection refused')

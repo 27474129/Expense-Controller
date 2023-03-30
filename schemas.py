@@ -1,6 +1,10 @@
+import logging
+
 from pydantic import BaseModel
 
 from postgresql import PostgresqlConnection
+
+logger = logging.getLogger(__name__)
 
 
 class Users(BaseModel):
@@ -57,18 +61,31 @@ class Categories(BaseModel):
             cursor.execute(query)
 
     @staticmethod
-    def find_category_by_name(name: str, user_id: int):
+    def update_category(fields: str, user_id: int, name: str) -> bool:
         query = f"""
-        SELECT user_id
-        FROM categories
+        UPDATE categories
+        SET {fields}
         WHERE 1=1
             AND name = '{name}'
             AND user_id = {user_id};
+        """
+        try:
+            with PostgresqlConnection() as connection:
+                cursor = connection.cursor()
+                cursor.execute(query)
+                return True
+        except Exception as e:
+            logger.warning(e)
+            return False
+
+    @staticmethod
+    def delete_category(name: str) -> bool:
+        query = f"""
+        DELETE FROM categories
+        WHERE name = '{name}';
         """
 
         with PostgresqlConnection() as connection:
             cursor = connection.cursor()
             cursor.execute(query)
-
-            # Returning user_id for create jwt token in future
-            return cursor.fetchone()
+            return True
